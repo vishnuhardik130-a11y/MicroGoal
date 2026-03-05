@@ -1,0 +1,55 @@
+// server.js
+
+const express = require("express");
+const mongoose = require("mongoose");
+
+const app = express();
+app.use(express.json());
+
+// Database Connection
+mongoose.connect("mongodb://localhost:27017/microgoal", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log("Database Connected"))
+.catch((err) => console.log(err));
+
+// Schema
+const GoalSchema = new mongoose.Schema({
+    title: String,
+    description: String,
+    status: String
+});
+
+// Model
+const Goal = mongoose.model("Goal", GoalSchema);
+
+// Create Goal
+app.post("/addGoal", async (req, res) => {
+    const goal = new Goal(req.body);
+    await goal.save();
+    res.send("Goal Added Successfully");
+});
+
+// Get All Goals
+app.get("/goals", async (req, res) => {
+    const goals = await Goal.find();
+    res.json(goals);
+});
+
+// Update Goal
+app.put("/updateGoal/:id", async (req, res) => {
+    await Goal.findByIdAndUpdate(req.params.id, req.body);
+    res.send("Goal Updated Successfully");
+});
+
+// Delete Goal
+app.delete("/deleteGoal/:id", async (req, res) => {
+    await Goal.findByIdAndDelete(req.params.id);
+    res.send("Goal Deleted Successfully");
+});
+
+// Server
+app.listen(5000, () => {
+    console.log("Server running on port 5000");
+});
